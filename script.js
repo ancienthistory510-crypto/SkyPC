@@ -1135,6 +1135,61 @@ function refreshAll() {
   renderPresets();
 }
 
+/* ============================================================
+   SOUND FX — lightweight WebAudio hover/click feedback
+   ============================================================ */
+const SOUND_SELECTOR = "button, a.btn, a.build-buy";
+let audioCtx = null;
+let lastHoverEl = null;
+
+const audio = () => {
+  if (!audioCtx) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    audioCtx = new AC();
+  }
+  if (audioCtx.state === "suspended") audioCtx.resume().catch(() => {});
+  return audioCtx;
+};
+
+const tone = ({ freq = 440, endFreq = null, duration = 0.06, type = "sine", volume = 0.025, delay = 0 }) => {
+  const ctx = audio();
+  if (!ctx) return;
+  const t0 = ctx.currentTime + delay;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, t0);
+  if (endFreq) osc.frequency.exponentialRampToValueAtTime(endFreq, t0 + duration);
+  gain.gain.setValueAtTime(0.0001, t0);
+  gain.gain.exponentialRampToValueAtTime(volume, t0 + 0.008);
+  gain.gain.exponentialRampToValueAtTime(0.0001, t0 + duration);
+  osc.connect(gain).connect(ctx.destination);
+  osc.start(t0);
+  osc.stop(t0 + duration + 0.02);
+};
+
+const playHoverSound = () => tone({ freq: 660, endFreq: 880, duration: 0.045, type: "sine", volume: 0.012 });
+const playClickSound = () => {
+  tone({ freq: 220, endFreq: 140, duration: 0.07, type: "triangle", volume: 0.035 });
+  tone({ freq: 520, endFreq: 760, duration: 0.05, type: "sine", volume: 0.018, delay: 0.015 });
+};
+
+document.addEventListener("pointerover", (e) => {
+  const el = e.target.closest?.(SOUND_SELECTOR);
+  if (!el) { lastHoverEl = null; return; }
+  if (el === lastHoverEl) return;
+  lastHoverEl = el;
+  playHoverSound();
+});
+document.addEventListener("pointerout", (e) => {
+  const el = e.target.closest?.(SOUND_SELECTOR);
+  if (el && (!e.relatedTarget || !el.contains(e.relatedTarget))) lastHoverEl = null;
+});
+document.addEventListener("click", (e) => {
+  if (e.target.closest?.(SOUND_SELECTOR)) playClickSound();
+});
+
 document.addEventListener("DOMContentLoaded", () => {
   loadState();
   loadCurrency();
