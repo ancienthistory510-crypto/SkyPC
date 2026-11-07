@@ -624,6 +624,29 @@ input, select { font: inherit; }
 .guide-card p { font-size: 0.9rem; color: var(--text-muted); margin: 0; }
 .shop-card { display: flex; flex-direction: column; }
 .shop-card .part-actions { margin-top: auto; padding-top: 0.75rem; }
+.shop-state-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.state-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-decoration: none;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+.state-link:hover {
+  transform: translateY(-2px);
+  border-color: rgba(195, 162, 215, 0.55);
+  background: rgba(139, 92, 246, 0.18);
+  box-shadow: 0 8px 22px rgba(139, 92, 246, 0.25);
+  color: #fff;
+}
 
 .video-card { display: flex; flex-direction: column; gap: 0.6rem; }
 .video-note { font-size: 0.82rem !important; }
