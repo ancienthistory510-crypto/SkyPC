@@ -49,7 +49,7 @@ const CURRENCIES = {
 };
 
 // Sky AI uses the Gemini API. Paste your API key here to enable chat.
-const GEMINI_API_KEY = "";
+const GEMINI_API_KEY = "AQ.Ab8RN6KqVIZLNUye2h1-VMcVqSJ0ojCvbnDaW3WESJYzrR41oA";
 const GEMINI_MODEL = "gemini-2.0-flash";
 const SKY_AI_SYSTEM = "You are Sky AI, the built-in assistant for SkyPCBuilder, a static PC component builder website. Help users with PC building, compatibility, parts selection, budgets, Malaysian shopping, and how to use the site. Keep answers concise and practical.";
 
