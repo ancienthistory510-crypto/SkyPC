@@ -622,6 +622,8 @@ input, select { font: inherit; }
 .guide-card:hover { transform: translateY(-3px); border-color: rgba(195, 162, 215, 0.5); box-shadow: 0 14px 34px rgba(139, 92, 246, 0.25); }
 .guide-card h3 { font-size: 1rem; color: var(--accent); }
 .guide-card p { font-size: 0.9rem; color: var(--text-muted); margin: 0; }
+.shop-card { display: flex; flex-direction: column; }
+.shop-card .part-actions { margin-top: auto; padding-top: 0.75rem; }
 
 .video-card { display: flex; flex-direction: column; gap: 0.6rem; }
 .video-note { font-size: 0.82rem !important; }
