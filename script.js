@@ -1169,10 +1169,10 @@ const tone = ({ freq = 440, endFreq = null, duration = 0.06, type = "sine", volu
   osc.stop(t0 + duration + 0.02);
 };
 
-const playHoverSound = () => tone({ freq: 660, endFreq: 880, duration: 0.045, type: "sine", volume: 0.012 });
+const playHoverSound = () => tone({ freq: 660, endFreq: 880, duration: 0.045, type: "sine", volume: 0.03 });
 const playClickSound = () => {
-  tone({ freq: 220, endFreq: 140, duration: 0.07, type: "triangle", volume: 0.035 });
-  tone({ freq: 520, endFreq: 760, duration: 0.05, type: "sine", volume: 0.018, delay: 0.015 });
+  tone({ freq: 220, endFreq: 140, duration: 0.07, type: "triangle", volume: 0.065 });
+  tone({ freq: 520, endFreq: 760, duration: 0.05, type: "sine", volume: 0.04, delay: 0.015 });
 };
 
 document.addEventListener("pointerover", (e) => {
