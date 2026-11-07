@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PC Component Builder &amp; Recommendations</title>
+  <title>SkyPCBuilder — PC Component Builder &amp; Recommendations</title>
   <meta name="description" content="Build a custom PC with real-time compatibility checks and curated build recommendations." />
   <link rel="stylesheet" href="styles.css" />
 </head>
@@ -12,9 +12,9 @@
   <!-- ===================== HEADER / NAV ===================== -->
   <header class="site-header">
     <div class="header-inner">
-      <a href="#" class="logo" aria-label="PC Builder home">
+      <a href="#" class="logo" aria-label="SkyPCBuilder home">
         <span class="logo-mark" aria-hidden="true">&#9881;</span>
-        <span class="logo-text">PC<span>Builder</span></span>
+        <span class="logo-text">Sky<span>PCBuilder</span></span>
       </a>
 
       <nav class="main-nav" aria-label="Main navigation">
@@ -193,6 +193,7 @@
       <div class="view-header custom-reco">
         <h2>Find shops by state</h2>
         <p>Each link opens Google Maps results for PC/component shops in that state.</p>
+        <button class="btn btn-ghost btn-small sound-toggle" aria-label="Toggle sound" aria-pressed="true"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path class="sound-waves" d="M16 8a5 5 0 0 1 0 8M18.5 5.5a9 9 0 0 1 0 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line class="sound-slash" x1="3" y1="3" x2="21" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
       </div>
       <div class="shop-state-grid">
         <a class="state-link" href="https://www.google.com/maps/search/?api=1&query=PC%20components%20shop%20Kuala%20Lumpur%2C%20Malaysia" target="_blank" rel="noopener noreferrer">Kuala Lumpur</a>
@@ -271,7 +272,7 @@
   <!-- ===================== FOOTER ===================== -->
   <footer class="site-footer">
     <p>
-      <strong>PCBuilder</strong> — Demo project. Prices are placeholders and currency
+      <strong>SkyPCBuilder</strong> — Demo project. Prices are placeholders and currency
       conversion uses approximate rates. "Shopee" links open Shopee search results for each part.
     </p>
     <p class="footer-contact">
@@ -288,6 +289,25 @@
       </div>
       <div id="summaryBody" class="summary-body"></div>
     </div>
+  </div>
+
+  <!-- Sky AI assistant -->
+  <button id="skyAiFab" class="sky-ai-fab" aria-label="Open Sky AI" aria-expanded="false">
+    <svg viewBox="0 0 48 48" width="30" height="30" aria-hidden="true" focusable="false"><line x1="24" y1="14" x2="24" y2="8" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><circle cx="24" cy="6" r="3" fill="currentColor"/><rect x="10" y="14" width="28" height="24" rx="8" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="19" cy="25" r="3" fill="currentColor"/><circle cx="29" cy="25" r="3" fill="currentColor"/><path d="M19 33c2 2 8 2 10 0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+  </button>
+  <div id="skyAiPanel" class="sky-ai-panel" hidden>
+    <div class="sky-ai-header">
+      <div class="sky-ai-title"><span class="sky-ai-dot" aria-hidden="true"></span> Sky AI</div>
+      <div class="sky-ai-header-actions">
+        <button id="skyAiSound" class="icon-btn sound-toggle" aria-label="Toggle sound" aria-pressed="true"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/><path class="sound-waves" d="M16 8a5 5 0 0 1 0 8M18.5 5.5a9 9 0 0 1 0 13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line class="sound-slash" x1="3" y1="3" x2="21" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+        <button id="skyAiClose" class="icon-btn" aria-label="Close Sky AI">&times;</button>
+      </div>
+    </div>
+    <div id="skyAiMessages" class="sky-ai-messages" aria-live="polite"></div>
+    <form id="skyAiForm" class="sky-ai-form">
+      <input id="skyAiInput" type="text" placeholder="Ask Sky AI..." autocomplete="off" />
+      <button id="skyAiSend" class="btn btn-primary btn-small" type="submit">Send</button>
+    </form>
   </div>
 
   <div id="printArea" class="print-area" aria-hidden="true"></div>

@@ -48,6 +48,11 @@ const CURRENCIES = {
   GBP: { symbol: "£", rate: 0.79, label: "GBP (Pound)" },
 };
 
+// Sky AI uses the Gemini API. Paste your API key here to enable chat.
+const GEMINI_API_KEY = "";
+const GEMINI_MODEL = "gemini-2.0-flash";
+const SKY_AI_SYSTEM = "You are Sky AI, the built-in assistant for SkyPCBuilder, a static PC component builder website. Help users with PC building, compatibility, parts selection, budgets, Malaysian shopping, and how to use the site. Keep answers concise and practical.";
+
 const money = (n) => {
   const currency = CURRENCIES[state.currency] || CURRENCIES.USD;
   return currency.symbol + (n * currency.rate).toLocaleString("en-US", { maximumFractionDigits: 2 });
@@ -1138,9 +1143,10 @@ function refreshAll() {
 /* ============================================================
    SOUND FX — lightweight WebAudio hover/click feedback
    ============================================================ */
-const SOUND_SELECTOR = "button, a.btn, a.build-buy";
+const SOUND_SELECTOR = "button, a.btn, a.build-buy, a.state-link";
 let audioCtx = null;
 let lastHoverEl = null;
+let uiSoundOn = true;
 
 const audio = () => {
   if (!audioCtx) {
@@ -1153,6 +1159,7 @@ const audio = () => {
 };
 
 const tone = ({ freq = 440, endFreq = null, duration = 0.06, type = "sine", volume = 0.025, delay = 0 }) => {
+  if (!uiSoundOn) return;
   const ctx = audio();
   if (!ctx) return;
   const t0 = ctx.currentTime + delay;
@@ -1175,6 +1182,18 @@ const playClickSound = () => {
   tone({ freq: 520, endFreq: 760, duration: 0.05, type: "sine", volume: 0.04, delay: 0.015 });
 };
 
+const updateSoundToggles = () => {
+  document.querySelectorAll(".sound-toggle").forEach((b) => {
+    b.classList.toggle("is-muted", !uiSoundOn);
+    b.setAttribute("aria-pressed", String(uiSoundOn));
+  });
+};
+const toggleUiSound = () => {
+  uiSoundOn = !uiSoundOn;
+  updateSoundToggles();
+};
+updateSoundToggles();
+
 document.addEventListener("pointerover", (e) => {
   const el = e.target.closest?.(SOUND_SELECTOR);
   if (!el) { lastHoverEl = null; return; }
@@ -1190,12 +1209,114 @@ document.addEventListener("click", (e) => {
   if (e.target.closest?.(SOUND_SELECTOR)) playClickSound();
 });
 
+/* ============================================================
+   SKY AI — Gemini-powered assistant
+   ============================================================ */
+let skyAiHistory = [];
+let skyAiBusy = false;
+const skyAiEl = (id) => document.getElementById(id);
+const skyAiScroll = () => {
+  const m = skyAiEl("skyAiMessages");
+  if (m) m.scrollTop = m.scrollHeight;
+};
+const skyAiAddMessage = (role, text) => {
+  const box = skyAiEl("skyAiMessages");
+  if (!box) return null;
+  const div = document.createElement("div");
+  div.className = `sky-ai-msg ${role}`;
+  div.textContent = text;
+  box.appendChild(div);
+  skyAiScroll();
+  return div;
+};
+const setSkyAiOpen = (open) => {
+  const panel = skyAiEl("skyAiPanel");
+  const fab = skyAiEl("skyAiFab");
+  if (!panel) return;
+  panel.hidden = !open;
+  if (fab) fab.setAttribute("aria-expanded", String(open));
+  if (open) {
+    const box = skyAiEl("skyAiMessages");
+    if (box && box.children.length === 0) {
+      skyAiAddMessage("assistant", "Hi! I'm Sky AI. Ask me anything about PC building, compatibility, parts, budgets, or Malaysian shopping.");
+    }
+    skyAiEl("skyAiInput")?.focus();
+  }
+};
+const toggleSkyAi = () => {
+  const panel = skyAiEl("skyAiPanel");
+  if (panel) setSkyAiOpen(panel.hidden);
+};
+const skyAiSetBusy = (busy) => {
+  skyAiBusy = busy;
+  const send = skyAiEl("skyAiSend");
+  const input = skyAiEl("skyAiInput");
+  if (send) send.disabled = busy;
+  if (input) input.disabled = busy;
+};
+async function skyAiAsk(question) {
+  const q = (question || "").trim();
+  if (!q || skyAiBusy) return;
+  const input = skyAiEl("skyAiInput");
+  if (input) input.value = "";
+  if (!GEMINI_API_KEY) {
+    skyAiAddMessage("assistant", "Sky AI needs a Gemini API key. Add GEMINI_API_KEY in script.js, then reload.");
+    return;
+  }
+  skyAiAddMessage("user", q);
+  skyAiHistory.push({ role: "user", text: q });
+  skyAiSetBusy(true);
+  tone({ freq: 520, endFreq: 700, duration: 0.06, type: "sine", volume: 0.03 });
+  const thinking = skyAiAddMessage("assistant", "…");
+  try {
+    const contents = skyAiHistory.slice(-12).map((m) => ({
+      role: m.role === "user" ? "user" : "model",
+      parts: [{ text: m.text }],
+    }));
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: SKY_AI_SYSTEM }] },
+        contents,
+        generationConfig: { temperature: 0.7, maxOutputTokens: 600 },
+      }),
+    });
+    if (!res.ok) throw new Error(await res.text());
+    const data = await res.json();
+    const text = data?.candidates?.[0]?.content?.parts?.map((p) => p.text).join("") || "Sorry, I couldn't get a response.";
+    if (thinking) thinking.textContent = text;
+    skyAiHistory.push({ role: "assistant", text });
+    tone({ freq: 880, endFreq: 1180, duration: 0.08, type: "sine", volume: 0.035 });
+  } catch (err) {
+    if (thinking) thinking.textContent = "Sorry, Sky AI couldn't reach Gemini. Check GEMINI_API_KEY and GEMINI_MODEL.";
+  } finally {
+    skyAiSetBusy(false);
+    skyAiEl("skyAiInput")?.focus();
+  }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   loadState();
   loadCurrency();
   populateBrandFilters();
   renderVideos();
   refreshAll();
+
+  // Sky AI + sound toggles
+  document.querySelectorAll(".sound-toggle").forEach((b) => b.addEventListener("click", toggleUiSound));
+  const skyAiFab = document.getElementById("skyAiFab");
+  const skyAiClose = document.getElementById("skyAiClose");
+  const skyAiForm = document.getElementById("skyAiForm");
+  if (skyAiFab) skyAiFab.addEventListener("click", toggleSkyAi);
+  if (skyAiClose) skyAiClose.addEventListener("click", () => {
+    const p = document.getElementById("skyAiPanel");
+    if (p && !p.hidden) setSkyAiOpen(false);
+  });
+  if (skyAiForm) skyAiForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    skyAiAsk(document.getElementById("skyAiInput")?.value);
+  });
 
   // Nav switching
   document.querySelectorAll(".nav-btn").forEach((btn) =>
@@ -1240,7 +1361,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.target.id === "summaryOverlay") closeSummary();
   });
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closeSummary();
+    if (e.key === "Escape") {
+      closeSummary();
+      const p = document.getElementById("skyAiPanel");
+      if (p && !p.hidden) setSkyAiOpen(false);
+    }
   });
 
   // Custom recommendation form
