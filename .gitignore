@@ -1,0 +1,8 @@
+.env
+.env.*
+!.env.example
+config.js
+config.local.json
+.devin/
+node_modules/
+.vercel/

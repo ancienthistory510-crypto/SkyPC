@@ -48,9 +48,9 @@ const CURRENCIES = {
   GBP: { symbol: "£", rate: 0.79, label: "GBP (Pound)" },
 };
 
-// Sky AI uses the Gemini API. Paste your API key here to enable chat.
-const GEMINI_API_KEY = "AQ.Ab8RN6JYoevU6RD9gziVxf-2_6m3e7gNAbMtKOYz8iLQrG4dMw";
-const GEMINI_MODEL = "gemini-3.5-flash-lite";
+// Sky AI uses Gemini via /api/gemini on Vercel, or window.GEMINI_API_KEY from config.js for local use.
+const GEMINI_API_KEY = window.GEMINI_API_KEY || "";
+const GEMINI_MODEL = window.GEMINI_MODEL || "gemini-3.5-flash-lite";
 const SKY_AI_SYSTEM = "You are Sky AI, the built-in assistant for SkyPCBuilder, a static PC component builder website. Help users with PC building, compatibility, parts selection, budgets, Malaysian shopping, and how to use the site. Keep answers concise and practical.";
 
 const money = (n) => {
@@ -1259,10 +1259,6 @@ async function skyAiAsk(question) {
   if (!q || skyAiBusy) return;
   const input = skyAiEl("skyAiInput");
   if (input) input.value = "";
-  if (!GEMINI_API_KEY) {
-    skyAiAddMessage("assistant", "Sky AI needs a Gemini API key. Add GEMINI_API_KEY in script.js, then reload.");
-    return;
-  }
   skyAiAddMessage("user", q);
   skyAiHistory.push({ role: "user", text: q });
   skyAiSetBusy(true);
@@ -1273,14 +1269,18 @@ async function skyAiAsk(question) {
       role: m.role === "user" ? "user" : "model",
       parts: [{ text: m.text }],
     }));
-    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`, {
+    const payload = {
+      systemInstruction: { parts: [{ text: SKY_AI_SYSTEM }] },
+      contents,
+      generationConfig: { temperature: 0.7, maxOutputTokens: 600 },
+    };
+    const url = GEMINI_API_KEY
+      ? `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`
+      : "/api/gemini";
+    const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: SKY_AI_SYSTEM }] },
-        contents,
-        generationConfig: { temperature: 0.7, maxOutputTokens: 600 },
-      }),
+      body: JSON.stringify(payload),
     });
     if (!res.ok) throw new Error(await res.text());
     const data = await res.json();
